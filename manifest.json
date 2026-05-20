@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Quick Copy Notes",
+  "version": "1.0",
+  "description": "Simpan teks penting dan salin hanya dengan satu klik.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage"
+  ]
+}
