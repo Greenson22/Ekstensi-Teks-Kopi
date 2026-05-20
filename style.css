@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  width: 300px; /* Lebar popup */
+  width: 320px; /* Diperlebar sedikit agar tombol muat */
   margin: 0;
   padding: 15px;
   background-color: #f9f9f9;
@@ -11,19 +11,54 @@ body {
   flex-direction: column;
 }
 
+.hidden {
+  display: none !important;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
 h2 {
   font-size: 16px;
-  margin: 0 0 10px 0;
+  margin: 0;
   color: #333;
 }
 
 .subtitle {
   font-size: 12px;
   color: #666;
-  margin-top: -5px;
+  margin-top: 0;
   margin-bottom: 10px;
 }
 
+/* Desain Tombol */
+button {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.btn-primary { background-color: #4CAF50; color: white; }
+.btn-primary:hover { background-color: #45a049; }
+
+.btn-secondary { background-color: #e0e0e0; color: #333; }
+.btn-secondary:hover { background-color: #ccc; }
+
+.btn-danger { background-color: #ff4d4d; color: white; }
+.btn-danger:hover { background-color: #cc0000; }
+
+.btn-icon { padding: 4px 6px; margin-left: 4px; }
+
+/* Input Form */
 input, textarea {
   width: 100%;
   box-sizing: border-box;
@@ -32,37 +67,16 @@ input, textarea {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+textarea { resize: none; height: 80px; }
+#btn-simpan { padding: 10px; font-size: 14px; }
 
-textarea {
-  resize: none;
-  height: 60px;
-}
-
-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover {
-  background-color: #45a049;
-}
-
-hr {
-  width: 100%;
-  border: 0;
-  border-top: 1px solid #ddd;
-  margin: 15px 0;
-}
-
+/* Daftar Catatan */
 ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
+  max-height: 300px;
+  overflow-y: auto; /* Bisa di-scroll jika terlalu banyak */
 }
 
 li {
@@ -74,27 +88,21 @@ li {
   margin-bottom: 8px;
   border-radius: 4px;
   border: 1px solid #ddd;
-  cursor: pointer;
   transition: background 0.2s;
-}
-
-li:hover {
-  background: #f1f1f1;
 }
 
 .judul-teks {
   font-weight: bold;
   color: #333;
   flex-grow: 1;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.btn-hapus {
-  background-color: #ff4d4d;
-  padding: 4px 8px;
-  font-size: 12px;
-  margin-left: 10px;
-}
-
-.btn-hapus:hover {
-  background-color: #cc0000;
+/* Mode Atur / Edit */
+.aksi-item {
+  display: flex;
+  gap: 2px;
 }

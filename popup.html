@@ -6,20 +6,38 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h2>Tambah Catatan</h2>
+
+  <!-- HALAMAN UTAMA: DAFTAR CATATAN -->
+  <div id="view-list" class="container">
+    <div class="header">
+      <h2>Daftar Catatan</h2>
+      <div class="header-actions">
+        <button id="btn-tambah" class="btn-primary">+ Tambah</button>
+        <button id="btn-atur" class="btn-secondary">Atur</button>
+      </div>
+    </div>
+    <p id="teks-petunjuk" class="subtitle">Klik judul untuk menyalin teks</p>
+    
+    <ul id="daftar-catatan">
+      <!-- Daftar akan dimunculkan di sini -->
+    </ul>
+  </div>
+
+  <!-- HALAMAN FORM: TAMBAH / EDIT CATATAN -->
+  <div id="view-form" class="container hidden">
+    <div class="header">
+      <h2 id="judul-form">Tambah Catatan</h2>
+      <button id="btn-batal" class="btn-secondary">Kembali</button>
+    </div>
+    
+    <!-- Input tersembunyi untuk menyimpan ID saat sedang mengedit -->
+    <input type="hidden" id="input-id">
+    
     <input type="text" id="input-judul" placeholder="Masukkan Judul (misal: Alamat)">
     <textarea id="input-isi" placeholder="Masukkan isi teks yang akan disalin..."></textarea>
-    <button id="btn-simpan">Simpan</button>
-
-    <hr>
-
-    <h2>Daftar Catatan</h2>
-    <p class="subtitle">Klik judul untuk menyalin teks</p>
-    <ul id="daftar-catatan">
-      <!-- Daftar akan dimunculkan di sini oleh JavaScript -->
-    </ul>
+    <button id="btn-simpan" class="btn-primary">Simpan</button>
   </div>
 
   <script src="popup.js"></script>
 </body>
+</html>
