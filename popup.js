@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAtur = document.getElementById('btn-atur');
   const btnBatal = document.getElementById('btn-batal');
   const btnSimpan = document.getElementById('btn-simpan');
+  const btnExportResponse = document.getElementById('btn-export-response');
   
   const inputId = document.getElementById('input-id');
   const inputJudul = document.getElementById('input-judul');
@@ -63,6 +64,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
     simpanKeStorage(() => tutupForm());
   });
+
+  // --- Event Listener untuk Tombol Ambil & Simpan JSON ---
+  btnExportResponse.addEventListener('click', async () => {
+    // Ambil tab aktif saat ini
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    if (!tab) {
+      alert("Tidak ada tab aktif yang ditemukan.");
+      return;
+    }
+
+    // Jalankan skrip di halaman web aktif
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: ambilModelResponses // Fungsi yang akan dijalankan di halaman web
+    }, (results) => {
+      if (chrome.runtime.lastError) {
+        alert("Gagal mengambil data: " + chrome.runtime.lastError.message);
+        return;
+      }
+
+      if (results && results[0] && results[0].result) {
+        const dataRespons = results[0].result;
+        
+        if (dataRespons.length === 0) {
+          alert("Tidak ditemukan elemen <model-response> di halaman ini.");
+          return;
+        }
+
+        // Proses download file JSON
+        unduhJson(dataRespons);
+      }
+    });
+  });
+
+  // Fungsi ini berjalan langsung DI DALAM HALAMAN WEB yang sedang dibuka
+  function ambilModelResponses() {
+    const modelResponses = document.querySelectorAll('model-response');
+    const hasil = [];
+
+    modelResponses.forEach((response, index) => {
+      hasil.push({
+        index: index + 1,
+        timestamp: new Date().toISOString(),
+        text: response.innerText.trim()
+      });
+    });
+
+    return hasil;
+  }
+
+  // Fungsi untuk membuat teks JSON menjadi file dan mengunduhnya
+  function unduhJson(data) {
+    const stringJson = JSON.stringify(data, null, 2); // Format JSON agar rapi (indentasi 2 spasi)
+    const blob = new Blob([stringJson], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    
+    // Membuat elemen link sementara untuk memicu download
+    const linkUnduh = document.createElement('a');
+    linkUnduh.href = url;
+    linkUnduh.download = `model-responses-${Date.now()}.json`; // Nama file unik berdasarkan waktu
+    document.body.appendChild(linkUnduh);
+    linkUnduh.click();
+    
+    // Bersihkan elemen setelah selesai download
+    document.body.removeChild(linkUnduh);
+    URL.revokeObjectURL(url);
+  }
 
   // --- Core Functions ---
   
