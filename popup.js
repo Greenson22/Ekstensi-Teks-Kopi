@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnImportResponse = document.getElementById('btn-import-response');
   const inputFileJson = document.getElementById('input-file-json');
   
-  // Elemen Hapus Semua Baru
   const btnHapusSemuaCatatan = document.getElementById('btn-hapus-semua-catatan');
   const btnHapusSemuaModel = document.getElementById('btn-hapus-semua-model');
   
@@ -62,31 +61,24 @@ document.addEventListener('DOMContentLoaded', () => {
     muatData();
   });
 
-  // Mode Atur Catatan Pribadi
   btnAtur.addEventListener('click', () => {
     isModeAtur = !isModeAtur;
     btnAtur.textContent = isModeAtur ? "Selesai" : "Atur";
     btnAtur.className = isModeAtur ? "btn-primary" : "btn-secondary";
     teksPetunjuk.textContent = isModeAtur ? "Mode Edit: Ubah urutan, edit, atau hapus." : "Klik judul untuk menyalin teks";
-    
-    // Tampilkan tombol Hapus Semua hanya jika sedang mengatur dan data tidak kosong
     btnHapusSemuaCatatan.style.display = (isModeAtur && catatanData.length > 0) ? "block" : "none";
     renderDaftarCatatan();
   });
 
-  // Mode Atur Model Response
   btnAturModel.addEventListener('click', () => {
     isModeAturModel = !isModeAturModel;
     btnAturModel.textContent = isModeAturModel ? "Selesai" : "Atur";
     btnAturModel.className = isModeAturModel ? "btn-primary" : "btn-secondary";
     teksPetunjukModel.textContent = isModeAturModel ? "Mode Edit: Ubah urutan, edit, atau hapus." : "Klik judul untuk menyalin response";
-    
-    // Tampilkan tombol Hapus Semua hanya jika sedang mengatur dan data tidak kosong
     btnHapusSemuaModel.style.display = (isModeAturModel && modelData.length > 0) ? "block" : "none";
     renderDaftarModel();
   });
 
-  // Logika Aksi Hapus Semua dengan Konfirmasi Jendela Popup
   btnHapusSemuaCatatan.addEventListener('click', () => {
     const konfirmasi = confirm("APAKAH ANDA YAKIN?\\nTindakan ini akan menghapus SELURUH catatan pribadi Anda secara permanen.");
     if (konfirmasi) {
@@ -119,18 +111,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnSimpan.addEventListener('click', () => {
     const judul = inputJudul.value.trim();
-    const isi = inputIsi.value.trim();
+    let isi = inputIsi.value;
     const idEdit = inputId.value;
 
-    if (!judul || !isi) {
+    if (!judul || !isi.trim()) {
       alert('Judul dan isi teks tidak boleh kosong!');
       return;
     }
 
+    // Bersihkan kata "Gemini berkata" jika diinput manual ke form
+    isi = isi.replace(/^Gemini berkata\s*\n*/i, '');
+
     if (currentTab === 'catatan') {
       if (idEdit) {
         const index = catatanData.findIndex(c => c.id == idEdit);
-        if (index !== -1) { var _ = catatanData; _[index].judul = judul; _[index].isi = isi; }
+        if (index !== -1) { catatanData[index].judul = judul; catatanData[index].isi = isi; }
       } else {
         catatanData.push({ id: Date.now(), judul: judul, isi: isi });
       }
@@ -138,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (idEdit) {
         const index = modelData.findIndex(m => m.id == idEdit);
-        if (index !== -1) { var _ = modelData; _[index].judul = judul; _[index].isi = isi; }
+        if (index !== -1) { modelData[index].judul = judul; modelData[index].isi = isi; }
       } else {
         modelData.push({ id: Date.now(), judul: judul, isi: isi });
       }
@@ -154,19 +149,58 @@ document.addEventListener('DOMContentLoaded', () => {
       target: { tabId: tab.id },
       func: () => {
         const elements = document.querySelectorAll('model-response');
-        return Array.from(elements).map((el, i) => ({ index: i + 1, timestamp: new Date().toISOString(), text: el.innerText.trim() }));
+        return Array.from(elements).map((el, i) => {
+          let rawText = el.innerText.trim();
+          let cleanedText = rawText.replace(/^Gemini berkata\s*\n*/i, '');
+          return {
+            index: i + 1,
+            timestamp: new Date().toISOString(),
+            text: cleanedText
+          };
+        });
       }
     }, (results) => {
       if (results && results[0] && results[0].result) {
         const data = results[0].result;
-        if (data.length === 0) { alert("Tidak ditemukan elemen <model-response>."); return; }
-        
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `model-responses-${Date.now()}.json`;
-        document.body.appendChild(a); a.click();
-        document.body.removeChild(a); URL.revokeObjectURL(url);
+        if (data.length === 0) { 
+          alert("Tidak ditemukan elemen <model-response> di halaman aktif ini."); 
+          return; 
+        }
+
+        const gabunganTeks = data.map(item => item.text).join('\n\n');
+
+        const pilihan = confirm(
+          `Ditemukan ${data.length} model response.\\n\\n` +
+          `• Klik [OK] jika Anda ingin langsung MENYALIN semua response ke Clipboard.\\n` +
+          `• Klik [BATAL] jika Anda ingin MENYIMPAN data ini ke dalam daftar ekstensi.`
+        );
+
+        if (pilihan) {
+          navigator.clipboard.writeText(gabunganTeks).then(() => {
+            alert("✓ Berhasil menyalin seluruh model response ke Clipboard!");
+          }).catch(err => {
+            alert("Gagal menyalin otomatis, mengalihkan ke unduh berkas JSON.");
+            unduhJson(data);
+          });
+        } else {
+          let dataBerhasilDisimpan = 0;
+          data.forEach((item) => {
+            if (item.text) {
+              modelData.push({
+                id: Date.now() + Math.random(),
+                judul: `Response Ke-${item.index}`,
+                isi: item.text
+              });
+              dataBerhasilDisimpan++;
+            }
+          });
+
+          if (dataBerhasilDisimpan > 0) {
+            simpanModelKeStorage(() => {
+              alert(`✓ Berhasil menyimpan ${dataBerhasilDisimpan} model response ke dalam daftar!`);
+            });
+          }
+        }
       }
     });
   });
@@ -181,13 +215,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = JSON.parse(evt.target.result);
         if (!Array.isArray(res)) return;
         res.forEach((item, index) => {
-          if (item.text) modelData.push({ id: Date.now() + Math.random(), judul: `Response Ke-${item.index || index + 1}`, isi: item.text.trim() });
+          if (item.text) {
+            let cleaned = item.text.replace(/^Gemini berkata\s*\n*/i, '');
+            modelData.push({ id: Date.now() + Math.random(), judul: `Response Ke-${item.index || index + 1}`, isi: cleaned });
+          }
         });
-        simpanModelKeStorage(() => { alert("Model response berhasil dimuat!"); inputFileJson.value = ''; });
+        simpanModelKeStorage(() => { alert("Model response JSON berhasil dimuat!"); inputFileJson.value = ''; });
       } catch (err) { alert("File JSON tidak valid."); }
     };
     reader.readAsText(file);
   });
+
+  function unduhJson(data) {
+    const stringJson = JSON.stringify(data, null, 2);
+    const blob = new Blob([stringJson], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `model-responses-${Date.now()}.json`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
 
   function muatData() {
     chrome.storage.local.get({ catatanList: [], modelList: [] }, (result) => {
@@ -281,14 +328,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     li.appendChild(barisAtas);
 
-    // Fitur Menampilkan Kata Awal / Cuplikan teks (Khusus Model Response)
+    // LOGIKA TERBARU: Mengambil tepat 30 karakter/huruf pertama, lalu diakhiri dengan titik-titik (...)
     if (isModelResponse && item.isi) {
       const pCuplikan = document.createElement('p');
       pCuplikan.className = 'cuplikan-teks';
       
-      // Ambil 60 karakter awal isi teks model response untuk dijadikan preview
-      const cuplikan = item.isi.length > 65 ? item.isi.substring(0, 62) + '...' : item.isi;
-      pCuplikan.textContent = cuplikan;
+      const teksNormal = item.isi.trim();
+      // Batasi tepat 50 karakter/huruf awal
+      const cuplikanKarakter = teksNormal.length > 50 ? teksNormal.substring(0, 50) + '...' : teksNormal;
+      
+      pCuplikan.textContent = cuplikanKarakter ? cuplikanKarakter : '(Teks kosong)';
       li.appendChild(pCuplikan);
     }
 
