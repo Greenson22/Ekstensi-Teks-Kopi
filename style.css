@@ -106,3 +106,7 @@ li {
   display: flex;
   gap: 2px;
 }
+
+#btn-import-response:hover {
+  background-color: #138496 !important;
+}

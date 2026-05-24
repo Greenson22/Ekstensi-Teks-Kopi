@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnBatal = document.getElementById('btn-batal');
   const btnSimpan = document.getElementById('btn-simpan');
   const btnExportResponse = document.getElementById('btn-export-response');
+  const btnImportResponse = document.getElementById('btn-import-response');
+  const inputFileJson = document.getElementById('input-file-json');
   
   const inputId = document.getElementById('input-id');
   const inputJudul = document.getElementById('input-judul');
@@ -97,6 +99,63 @@ document.addEventListener('DOMContentLoaded', () => {
         unduhJson(dataRespons);
       }
     });
+  });
+
+  // Memicu klik pada input file tersembunyi saat tombol ditekan
+  btnImportResponse.addEventListener('click', () => {
+    inputFileJson.click();
+  });
+
+  // Menangani perubahan file (ketika user memilih file JSON)
+  inputFileJson.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const dataRespons = JSON.parse(e.target.result);
+
+        // Validasi apakah struktur file JSON sesuai dengan format export
+        if (!Array.isArray(dataRespons)) {
+          alert("Format JSON tidak valid. Harus berupa list/array.");
+          return;
+        }
+
+        let dataBerhasilDiimport = 0;
+
+        dataRespons.forEach((item) => {
+          // Pastikan item memiliki isi teks
+          if (item.text) {
+            const judulRespons = `Response Ke-${item.index || dataBerhasilDiimport + 1}`;
+            
+            // Masukkan ke array catatanData dengan format ekstensi Anda
+            catatanData.push({
+              id: Date.now() + Math.random(), // ID Unik agar tidak bentrok
+              judul: judulRespons,
+              isi: item.text.trim()
+            });
+            dataBerhasilDiimport++;
+          }
+        });
+
+        if (dataBerhasilDiimport > 0) {
+          // Simpan ke storage lokal chrome dan perbarui tampilan daftar
+          simpanKeStorage(() => {
+            alert(`Berhasil memuat ${dataBerhasilDiimport} model response!`);
+            inputFileJson.value = ''; // Reset input file
+          });
+        } else {
+          alert("Tidak ada data response valid yang bisa dimuat.");
+        }
+
+      } catch (err) {
+        alert("Gagal membaca file JSON. Pastikan file tidak rusak.");
+        console.error(err);
+      }
+    };
+
+    reader.readAsText(file);
   });
 
   // Fungsi ini berjalan langsung DI DALAM HALAMAN WEB yang sedang dibuka
