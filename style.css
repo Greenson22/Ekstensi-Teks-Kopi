@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  width: 320px; /* Diperlebar sedikit agar tombol muat */
+  width: 320px;
   margin: 0;
   padding: 15px;
   background-color: #f9f9f9;
@@ -15,6 +15,42 @@ body {
   display: none !important;
 }
 
+/* Desain Sistem Tab */
+.tabs-nav {
+  display: flex;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #ddd;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: bold;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background-color: #eee;
+  color: #333;
+}
+
+.tab-btn.active {
+  color: #4CAF50;
+  border-bottom: 2px solid #4CAF50;
+  margin-bottom: -2px; /* Menutupi border bawah nav */
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -25,7 +61,7 @@ body {
 }
 
 h2 {
-  font-size: 16px;
+  font-size: 15px;
   margin: 0;
   color: #333;
 }
@@ -70,13 +106,13 @@ input, textarea {
 textarea { resize: none; height: 80px; }
 #btn-simpan { padding: 10px; font-size: 14px; }
 
-/* Daftar Catatan */
+/* Daftar Catatan & Model */
 ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
-  max-height: 300px;
-  overflow-y: auto; /* Bisa di-scroll jika terlalu banyak */
+  max-height: 250px; /* Disesuaikan sedikit agar muat dengan tab */
+  overflow-y: auto;
 }
 
 li {

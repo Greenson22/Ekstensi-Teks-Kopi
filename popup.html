@@ -7,38 +7,54 @@
 </head>
 <body>
 
-  <!-- HALAMAN UTAMA: DAFTAR CATATAN -->
   <div id="view-list" class="container">
-    <div class="header">
-      <h2>Daftar Catatan</h2>
-      <div class="header-actions">
-        <button id="btn-tambah" class="btn-primary">+ Tambah</button>
-        <button id="btn-atur" class="btn-secondary">Atur</button>
-      </div>
+    
+    <div class="tabs-nav">
+      <button id="tab-catatan" class="tab-btn active">Catatan Pribadi</button>
+      <button id="tab-model" class="tab-btn">Model Response</button>
     </div>
-    <p id="teks-petunjuk" class="subtitle">Klik judul untuk menyalin teks</p>
-    
-    <button id="btn-export-response" class="btn-primary" style="margin-bottom: 10px; background-color: #007bff;">
-      📥 Ambil & Simpan Model Response
-    </button>
 
-    <button id="btn-import-response" class="btn-secondary" style="margin-bottom: 10px; background-color: #17a2b8; color: white;">
-      📤 Muat Model Response JSON
-    </button>
-    <input type="file" id="input-file-json" accept=".json" style="display: none;">
-    
-    <ul id="daftar-catatan">
-      </ul>
+    <div id="tab-catatan-konten" class="tab-content">
+      <div class="header">
+        <h2>Daftar Catatan</h2>
+        <div class="header-actions">
+          <button id="btn-tambah" class="btn-primary">+ Tambah</button>
+          <button id="btn-atur" class="btn-secondary">Atur</button>
+        </div>
+      </div>
+      <p id="teks-petunjuk" class="subtitle">Klik judul untuk menyalin teks</p>
+      
+      <ul id="daftar-catatan"></ul>
+    </div>
+
+    <div id="tab-model-konten" class="tab-content hidden">
+      <div class="header">
+        <h2>Model Response JSON</h2>
+        <button id="btn-atur-model" class="btn-secondary">Atur</button>
+      </div>
+      <p id="teks-petunjuk-model" class="subtitle">Klik judul untuk menyalin response</p>
+
+      <div class="model-actions">
+        <button id="btn-export-response" class="btn-primary" style="background-color: #007bff; width: 100%; margin-bottom: 8px;">
+          📥 Ambil & Simpan Model Response
+        </button>
+        <button id="btn-import-response" class="btn-secondary" style="background-color: #17a2b8; color: white; width: 100%; margin-bottom: 12px;">
+          📤 Muat Model Response JSON
+        </button>
+        <input type="file" id="input-file-json" accept=".json" style="display: none;">
+      </div>
+
+      <ul id="daftar-model-response"></ul>
+    </div>
+
   </div>
 
-  <!-- HALAMAN FORM: TAMBAH / EDIT CATATAN -->
   <div id="view-form" class="container hidden">
     <div class="header">
       <h2 id="judul-form">Tambah Catatan</h2>
       <button id="btn-batal" class="btn-secondary">Kembali</button>
     </div>
     
-    <!-- Input tersembunyi untuk menyimpan ID saat sedang mengedit -->
     <input type="hidden" id="input-id">
     
     <input type="text" id="input-judul" placeholder="Masukkan Judul (misal: Alamat)">
