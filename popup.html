@@ -25,6 +25,10 @@
       <p id="teks-petunjuk" class="subtitle">Klik judul untuk menyalin teks</p>
       
       <ul id="daftar-catatan"></ul>
+      
+      <div class="danger-zone">
+        <button id="btn-hapus-semua-catatan" class="btn-danger-outline" style="display: none;">🗑️ Hapus Semua Catatan</button>
+      </div>
     </div>
 
     <div id="tab-model-konten" class="tab-content hidden">
@@ -45,6 +49,10 @@
       </div>
 
       <ul id="daftar-model-response"></ul>
+
+      <div class="danger-zone">
+        <button id="btn-hapus-semua-model" class="btn-danger-outline" style="display: none;">🗑️ Hapus Semua Model</button>
+      </div>
     </div>
 
   </div>
@@ -56,7 +64,6 @@
     </div>
     
     <input type="hidden" id="input-id">
-    
     <input type="text" id="input-judul" placeholder="Masukkan Judul (misal: Alamat)">
     <textarea id="input-isi" placeholder="Masukkan isi teks yang akan disalin..."></textarea>
     <button id="btn-simpan" class="btn-primary">Simpan</button>

@@ -43,7 +43,7 @@ body {
 .tab-btn.active {
   color: #4CAF50;
   border-bottom: 2px solid #4CAF50;
-  margin-bottom: -2px; /* Menutupi border bawah nav */
+  margin-bottom: -2px;
 }
 
 .tab-content {
@@ -92,7 +92,23 @@ button {
 .btn-danger { background-color: #ff4d4d; color: white; }
 .btn-danger:hover { background-color: #cc0000; }
 
-.btn-icon { padding: 4px 6px; margin-left: 4px; }
+/* Desain Khusus Tombol Hapus Semua */
+.btn-danger-outline {
+  background-color: transparent;
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+.btn-danger-outline:hover {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.btn-icon { padding: 4px 6px; margin-left: 2px; }
 
 /* Input Form */
 input, textarea {
@@ -111,14 +127,12 @@ ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
-  max-height: 250px; /* Disesuaikan sedikit agar muat dengan tab */
+  max-height: 220px; /* Ukuran dipangkas sedikit agar tombol hapus semua terlihat pas */
   overflow-y: auto;
 }
 
 li {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   background: white;
   padding: 10px;
   margin-bottom: 8px;
@@ -137,7 +151,18 @@ li {
   white-space: nowrap;
 }
 
-/* Mode Atur / Edit */
+/* Desain Preview Cuplikan Kata Model Response */
+.cuplikan-teks {
+  font-size: 11px;
+  color: #777;
+  margin: 2px 0 0 0;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 .aksi-item {
   display: flex;
   gap: 2px;
@@ -145,4 +170,8 @@ li {
 
 #btn-import-response:hover {
   background-color: #138496 !important;
+}
+
+.danger-zone {
+  width: 100%;
 }

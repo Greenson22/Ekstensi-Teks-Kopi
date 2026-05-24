@@ -3,13 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewList = document.getElementById('view-list');
   const viewForm = document.getElementById('view-form');
   
-  // Elemen Navigasi Tab
   const tabCatatan = document.getElementById('tab-catatan');
   const tabModel = document.getElementById('tab-model');
   const tabCatatanKonten = document.getElementById('tab-catatan-konten');
   const tabModelKonten = document.getElementById('tab-model-konten');
 
-  // Elemen Aksi
   const btnTambah = document.getElementById('btn-tambah');
   const btnAtur = document.getElementById('btn-atur');
   const btnAturModel = document.getElementById('btn-atur-model');
@@ -18,6 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnExportResponse = document.getElementById('btn-export-response');
   const btnImportResponse = document.getElementById('btn-import-response');
   const inputFileJson = document.getElementById('input-file-json');
+  
+  // Elemen Hapus Semua Baru
+  const btnHapusSemuaCatatan = document.getElementById('btn-hapus-semua-catatan');
+  const btnHapusSemuaModel = document.getElementById('btn-hapus-semua-model');
   
   const inputId = document.getElementById('input-id');
   const inputJudul = document.getElementById('input-judul');
@@ -30,17 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const teksPetunjuk = document.getElementById('teks-petunjuk');
   const teksPetunjukModel = document.getElementById('teks-petunjuk-model');
 
-  // --- State / Variabel Global ---
   let isModeAtur = false;
   let isModeAturModel = false;
   let catatanData = [];
   let modelData = [];
-  let currentTab = 'catatan'; // 'catatan' atau 'model'
+  let currentTab = 'catatan';
 
-  // Muat data pertama kali
   muatData();
 
-  // --- Logika Perpindahan Tab ---
   tabCatatan.addEventListener('click', () => {
     currentTab = 'catatan';
     tabCatatan.classList.add('active');
@@ -57,32 +56,67 @@ document.addEventListener('DOMContentLoaded', () => {
     tabCatatanKonten.classList.add('hidden');
   });
 
-  // --- Navigasi Halaman Form ---
   btnTambah.addEventListener('click', () => bukaForm());
   btnBatal.addEventListener('click', () => {
     tutupForm();
     muatData();
   });
 
-  // --- Mode Atur Catatan Pribadi ---
+  // Mode Atur Catatan Pribadi
   btnAtur.addEventListener('click', () => {
     isModeAtur = !isModeAtur;
     btnAtur.textContent = isModeAtur ? "Selesai" : "Atur";
     btnAtur.className = isModeAtur ? "btn-primary" : "btn-secondary";
     teksPetunjuk.textContent = isModeAtur ? "Mode Edit: Ubah urutan, edit, atau hapus." : "Klik judul untuk menyalin teks";
+    
+    // Tampilkan tombol Hapus Semua hanya jika sedang mengatur dan data tidak kosong
+    btnHapusSemuaCatatan.style.display = (isModeAtur && catatanData.length > 0) ? "block" : "none";
     renderDaftarCatatan();
   });
 
-  // --- Mode Atur Model Response ---
+  // Mode Atur Model Response
   btnAturModel.addEventListener('click', () => {
     isModeAturModel = !isModeAturModel;
     btnAturModel.textContent = isModeAturModel ? "Selesai" : "Atur";
     btnAturModel.className = isModeAturModel ? "btn-primary" : "btn-secondary";
     teksPetunjukModel.textContent = isModeAturModel ? "Mode Edit: Ubah urutan, edit, atau hapus." : "Klik judul untuk menyalin response";
+    
+    // Tampilkan tombol Hapus Semua hanya jika sedang mengatur dan data tidak kosong
+    btnHapusSemuaModel.style.display = (isModeAturModel && modelData.length > 0) ? "block" : "none";
     renderDaftarModel();
   });
 
-  // --- Fungsi Form (Simpan/Edit) ---
+  // Logika Aksi Hapus Semua dengan Konfirmasi Jendela Popup
+  btnHapusSemuaCatatan.addEventListener('click', () => {
+    const konfirmasi = confirm("APAKAH ANDA YAKIN?\\nTindakan ini akan menghapus SELURUH catatan pribadi Anda secara permanen.");
+    if (konfirmasi) {
+      catatanData = [];
+      simpanCatatanKeStorage(() => {
+        isModeAtur = false;
+        btnAtur.textContent = "Atur";
+        btnAtur.className = "btn-secondary";
+        teksPetunjuk.textContent = "Klik judul untuk menyalin teks";
+        btnHapusSemuaCatatan.style.display = "none";
+        alert("Semua catatan pribadi telah dibersihkan.");
+      });
+    }
+  });
+
+  btnHapusSemuaModel.addEventListener('click', () => {
+    const konfirmasi = confirm("APAKAH ANDA YAKIN?\\nTindakan ini akan menghapus SELURUH data model response secara permanen.");
+    if (konfirmasi) {
+      modelData = [];
+      simpanModelKeStorage(() => {
+        isModeAturModel = false;
+        btnAturModel.textContent = "Atur";
+        btnAturModel.className = "btn-secondary";
+        teksPetunjukModel.textContent = "Klik judul untuk menyalin response";
+        btnHapusSemuaModel.style.display = "none";
+        alert("Semua model response telah dibersihkan.");
+      });
+    }
+  });
+
   btnSimpan.addEventListener('click', () => {
     const judul = inputJudul.value.trim();
     const isi = inputIsi.value.trim();
@@ -96,206 +130,118 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentTab === 'catatan') {
       if (idEdit) {
         const index = catatanData.findIndex(c => c.id == idEdit);
-        if (index !== -1) {
-          catatanData[index].judul = judul;
-          catatanData[index].isi = isi;
-        }
+        if (index !== -1) { var _ = catatanData; _[index].judul = judul; _[index].isi = isi; }
       } else {
         catatanData.push({ id: Date.now(), judul: judul, isi: isi });
       }
-      simpanCatatanKeStorage(() => tutupForm());
+      simpanCatatanKeStorage(() => { tutupForm(); isModeAtur = false; });
     } else {
       if (idEdit) {
         const index = modelData.findIndex(m => m.id == idEdit);
-        if (index !== -1) {
-          modelData[index].judul = judul;
-          modelData[index].isi = isi;
-        }
+        if (index !== -1) { var _ = modelData; _[index].judul = judul; _[index].isi = isi; }
       } else {
         modelData.push({ id: Date.now(), judul: judul, isi: isi });
       }
-      simpanModelKeStorage(() => tutupForm());
+      simpanModelKeStorage(() => { tutupForm(); isModeAturModel = false; });
     }
   });
 
-  // --- Ambil & Simpan JSON ---
   btnExportResponse.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    if (!tab) {
-      alert("Tidak ada tab aktif yang ditemukan.");
-      return;
-    }
+    if (!tab) return;
 
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: ambilModelResponses
-    }, (results) => {
-      if (chrome.runtime.lastError) {
-        alert("Gagal mengambil data: " + chrome.runtime.lastError.message);
-        return;
+      func: () => {
+        const elements = document.querySelectorAll('model-response');
+        return Array.from(elements).map((el, i) => ({ index: i + 1, timestamp: new Date().toISOString(), text: el.innerText.trim() }));
       }
-
+    }, (results) => {
       if (results && results[0] && results[0].result) {
-        const dataRespons = results[0].result;
+        const data = results[0].result;
+        if (data.length === 0) { alert("Tidak ditemukan elemen <model-response>."); return; }
         
-        if (dataRespons.length === 0) {
-          alert("Tidak ditemukan elemen <model-response> di halaman ini.");
-          return;
-        }
-
-        unduhJson(dataRespons);
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `model-responses-${Date.now()}.json`;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
       }
     });
   });
 
-  btnImportResponse.addEventListener('click', () => {
-    inputFileJson.click();
-  });
-
-  inputFileJson.addEventListener('change', (event) => {
-    const file = event.target.files[0];
+  btnImportResponse.addEventListener('click', () => inputFileJson.click());
+  inputFileJson.addEventListener('change', (e) => {
+    const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = (evt) => {
       try {
-        const dataRespons = JSON.parse(e.target.result);
-
-        if (!Array.isArray(dataRespons)) {
-          alert("Format JSON tidak valid. Harus berupa list/array.");
-          return;
-        }
-
-        let dataBerhasilDiimport = 0;
-
-        dataRespons.forEach((item) => {
-          if (item.text) {
-            const judulRespons = `Response Ke-${item.index || dataBerhasilDiimport + 1}`;
-            
-            modelData.push({
-              id: Date.now() + Math.random(),
-              judul: judulRespons,
-              isi: item.text.trim()
-            });
-            dataBerhasilDiimport++;
-          }
+        const res = JSON.parse(evt.target.result);
+        if (!Array.isArray(res)) return;
+        res.forEach((item, index) => {
+          if (item.text) modelData.push({ id: Date.now() + Math.random(), judul: `Response Ke-${item.index || index + 1}`, isi: item.text.trim() });
         });
-
-        if (dataBerhasilDiimport > 0) {
-          simpanModelKeStorage(() => {
-            alert(`Berhasil memuat ${dataBerhasilDiimport} model response!`);
-            inputFileJson.value = '';
-          });
-        } else {
-          alert("Tidak ada data response valid yang bisa dimuat.");
-        }
-
-      } catch (err) {
-        alert("Gagal membaca file JSON. Pastikan file tidak rusak.");
-        console.error(err);
-      }
+        simpanModelKeStorage(() => { alert("Model response berhasil dimuat!"); inputFileJson.value = ''; });
+      } catch (err) { alert("File JSON tidak valid."); }
     };
-
     reader.readAsText(file);
   });
 
-  function ambilModelResponses() {
-    const modelResponses = document.querySelectorAll('model-response');
-    const hasil = [];
-    modelResponses.forEach((response, index) => {
-      hasil.push({
-        index: index + 1,
-        timestamp: new Date().toISOString(),
-        text: response.innerText.trim()
-      });
-    });
-    return hasil;
-  }
-
-  function unduhJson(data) {
-    const stringJson = JSON.stringify(data, null, 2);
-    const blob = new Blob([stringJson], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    
-    const linkUnduh = document.createElement('a');
-    linkUnduh.href = url;
-    linkUnduh.download = `model-responses-${Date.now()}.json`;
-    document.body.appendChild(linkUnduh);
-    linkUnduh.click();
-    
-    document.body.removeChild(linkUnduh);
-    URL.revokeObjectURL(url);
-  }
-
-  // --- Core Functions (Storage & Render) ---
-  
   function muatData() {
     chrome.storage.local.get({ catatanList: [], modelList: [] }, (result) => {
-      catatanData = result.catatanList;
-      modelData = result.modelList;
-      renderDaftarCatatan();
-      renderDaftarModel();
+      catatanData = result.catatanList; modelData = result.modelList;
+      renderDaftarCatatan(); renderDaftarModel();
     });
   }
 
   function simpanCatatanKeStorage(callback) {
-    chrome.storage.local.set({ catatanList: catatanData }, () => {
-      renderDaftarCatatan();
-      if (callback) callback();
-    });
+    chrome.storage.local.set({ catatanList: catatanData }, () => { renderDaftarCatatan(); if (callback) callback(); });
   }
 
   function simpanModelKeStorage(callback) {
-    chrome.storage.local.set({ modelList: modelData }, () => {
-      renderDaftarModel();
-      if (callback) callback();
-    });
+    chrome.storage.local.set({ modelList: modelData }, () => { renderDaftarModel(); if (callback) callback(); });
   }
 
   function bukaForm(dataEdit = null) {
-    viewList.classList.add('hidden');
-    viewForm.classList.remove('hidden');
-    
+    viewList.classList.add('hidden'); viewForm.classList.remove('hidden');
     if (dataEdit) {
-      judulForm.textContent = "Edit Catatan";
-      inputId.value = dataEdit.id;
-      inputJudul.value = dataEdit.judul;
-      inputIsi.value = dataEdit.isi;
+      judulForm.textContent = "Edit Catatan"; inputId.value = dataEdit.id;
+      inputJudul.value = dataEdit.judul; inputIsi.value = dataEdit.isi;
     } else {
-      judulForm.textContent = "Tambah Catatan";
-      inputId.value = '';
-      inputJudul.value = '';
-      inputIsi.value = '';
+      judulForm.textContent = "Tambah Catatan"; inputId.value = ''; inputJudul.value = ''; inputIsi.value = '';
     }
   }
 
-  function tutupForm() {
-    viewForm.classList.add('hidden');
-    viewList.classList.remove('hidden');
-  }
+  function tutupForm() { viewForm.classList.add('hidden'); viewList.classList.remove('hidden'); }
 
-  // Render Tab Catatan Pribadi
   function renderDaftarCatatan() {
     daftarCatatan.innerHTML = '';
+    if (!isModeAtur || catatanData.length === 0) btnHapusSemuaCatatan.style.display = "none";
     catatanData.forEach((catatan, index) => {
-      const li = buatElemenItem(catatan, index, catatanData, isModeAtur, simpanCatatanKeStorage);
-      daftarCatatan.appendChild(li);
+      daftarCatatan.appendChild(buatElemenItem(catatan, index, catatanData, isModeAtur, simpanCatatanKeStorage, false));
     });
   }
 
-  // Render Tab Model Response
   function renderDaftarModel() {
     daftarModelResponse.innerHTML = '';
+    if (!isModeAturModel || modelData.length === 0) btnHapusSemuaModel.style.display = "none";
     modelData.forEach((model, index) => {
-      const li = buatElemenItem(model, index, modelData, isModeAturModel, simpanModelKeStorage);
-      daftarModelResponse.appendChild(li);
+      daftarModelResponse.appendChild(buatElemenItem(model, index, modelData, isModeAturModel, simpanModelKeStorage, true));
     });
   }
 
-  // Helper Reusable function untuk membuat item di list (agar kode tidak berulang)
-  function buatElemenItem(item, index, arrayData, modeAtur, fungsiSimpan) {
+  function buatElemenItem(item, index, arrayData, modeAtur, fungsiSimpan, isModelResponse = false) {
     const li = document.createElement('li');
+    li.style.flexDirection = 'column';
+    li.style.alignItems = 'stretch';
+    li.style.gap = '4px';
+
+    const barisAtas = document.createElement('div');
+    barisAtas.style.display = 'flex';
+    barisAtas.style.justifyContent = 'space-between';
+    barisAtas.style.alignItems = 'center';
 
     const spanJudul = document.createElement('span');
     spanJudul.className = 'judul-teks';
@@ -305,63 +251,45 @@ document.addEventListener('DOMContentLoaded', () => {
       spanJudul.title = "Klik untuk menyalin teks";
       spanJudul.addEventListener('click', () => {
         navigator.clipboard.writeText(item.isi).then(() => {
-          spanJudul.textContent = '✓ Tersalin!';
-          spanJudul.style.color = '#4CAF50';
-          setTimeout(() => {
-            spanJudul.textContent = item.judul;
-            spanJudul.style.color = '#333';
-          }, 1000);
+          spanJudul.textContent = '✓ Tersalin!'; spanJudul.style.color = '#4CAF50';
+          setTimeout(() => { spanJudul.textContent = item.judul; spanJudul.style.color = '#333'; }, 1000);
         });
       });
     } else {
       spanJudul.style.cursor = 'default';
-      spanJudul.title = "";
     }
-    li.appendChild(spanJudul);
+    barisAtas.appendChild(spanJudul);
 
     if (modeAtur) {
       const divAksi = document.createElement('div');
       divAksi.className = 'aksi-item';
+      
+      const btnNaik = document.createElement('button'); btnNaik.className = 'btn-secondary btn-icon'; btnNaik.innerHTML = '↑'; btnNaik.disabled = index === 0;
+      btnNaik.addEventListener('click', () => { const t = arrayData[index]; arrayData[index] = arrayData[index-1]; arrayData[index-1] = t; fungsiSimpan(); });
 
-      const btnNaik = document.createElement('button');
-      btnNaik.className = 'btn-secondary btn-icon';
-      btnNaik.innerHTML = '↑';
-      btnNaik.disabled = index === 0;
-      btnNaik.addEventListener('click', () => {
-        const temp = arrayData[index];
-        arrayData[index] = arrayData[index - 1];
-        arrayData[index - 1] = temp;
-        fungsiSimpan();
-      });
+      const btnTurun = document.createElement('button'); btnTurun.className = 'btn-secondary btn-icon'; btnTurun.innerHTML = '↓'; btnTurun.disabled = index === arrayData.length - 1;
+      btnTurun.addEventListener('click', () => { const t = arrayData[index]; arrayData[index] = arrayData[index+1]; arrayData[index+1] = t; fungsiSimpan(); });
 
-      const btnTurun = document.createElement('button');
-      btnTurun.className = 'btn-secondary btn-icon';
-      btnTurun.innerHTML = '↓';
-      btnTurun.disabled = index === arrayData.length - 1;
-      btnTurun.addEventListener('click', () => {
-        const temp = arrayData[index];
-        arrayData[index] = arrayData[index + 1];
-        arrayData[index + 1] = temp;
-        fungsiSimpan();
-      });
-
-      const btnEdit = document.createElement('button');
-      btnEdit.className = 'btn-secondary btn-icon';
-      btnEdit.innerHTML = '✎';
+      const btnEdit = document.createElement('button'); btnEdit.className = 'btn-secondary btn-icon'; btnEdit.innerHTML = '✎';
       btnEdit.addEventListener('click', () => bukaForm(item));
 
-      const btnHapus = document.createElement('button');
-      btnHapus.className = 'btn-danger btn-icon';
-      btnHapus.innerHTML = 'X';
-      btnHapus.addEventListener('click', () => {
-        if(confirm(`Hapus item "${item.judul}"?`)) {
-          arrayData.splice(index, 1);
-          fungsiSimpan();
-        }
-      });
+      const btnHapus = document.createElement('button'); btnHapus.className = 'btn-danger btn-icon'; btnHapus.innerHTML = 'X';
+      btnHapus.addEventListener('click', () => { if(confirm(`Hapus "${item.judul}"?`)) { arrayData.splice(index, 1); fungsiSimpan(); } });
 
       divAksi.append(btnNaik, btnTurun, btnEdit, btnHapus);
-      li.appendChild(divAksi);
+      barisAtas.appendChild(divAksi);
+    }
+    li.appendChild(barisAtas);
+
+    // Fitur Menampilkan Kata Awal / Cuplikan teks (Khusus Model Response)
+    if (isModelResponse && item.isi) {
+      const pCuplikan = document.createElement('p');
+      pCuplikan.className = 'cuplikan-teks';
+      
+      // Ambil 60 karakter awal isi teks model response untuk dijadikan preview
+      const cuplikan = item.isi.length > 65 ? item.isi.substring(0, 62) + '...' : item.isi;
+      pCuplikan.textContent = cuplikan;
+      li.appendChild(pCuplikan);
     }
 
     return li;
